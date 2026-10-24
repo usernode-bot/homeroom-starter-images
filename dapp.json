@@ -1,0 +1,35 @@
+{
+  "category": "other",
+  "icon": {
+    "emoji": "🍲"
+  },
+  "secrets": [],
+  "tests": [
+    {
+      "id": "potluck.next",
+      "name": "A potluck shows who is bringing what",
+      "path": "/#/p/900001",
+      "expectSelector": "#potluck [data-potluck] [data-course] [data-dish]",
+      "visual": true,
+      "impact": [
+        "public/**",
+        "api.js"
+      ]
+    },
+    {
+      "name": "The potlucks coming up are listed",
+      "path": "/",
+      "expectSelector": "#potlucks [data-potluck]"
+    },
+    {
+      "name": "A potluck can be planned",
+      "path": "/#/plan",
+      "expectSelector": "#plan-form input[name=\"title\"]"
+    },
+    {
+      "name": "Each potluck has its chat",
+      "path": "/#/p/900001",
+      "expectSelector": "#potluck [data-potluck] [data-chat] [data-message]"
+    }
+  ]
+}
