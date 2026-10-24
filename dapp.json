@@ -1,0 +1,30 @@
+{
+  "category": "other",
+  "icon": {
+    "emoji": "🏃"
+  },
+  "secrets": [],
+  "tests": [
+    {
+      "id": "challenge.board",
+      "name": "The leaderboard and the group goal show",
+      "path": "/",
+      "expectSelector": "#leaderboard [data-person] [data-total]",
+      "visual": true,
+      "impact": [
+        "public/**",
+        "api.js"
+      ]
+    },
+    {
+      "name": "An amount can be logged",
+      "path": "/",
+      "expectSelector": "#log-form input[name=\"amount\"]"
+    },
+    {
+      "name": "The group goal shows how far along it is",
+      "path": "/",
+      "expectSelector": "#goal[data-progress]"
+    }
+  ]
+}
