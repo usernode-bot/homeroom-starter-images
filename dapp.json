@@ -1,0 +1,25 @@
+{
+  "category": "other",
+  "icon": {
+    "emoji": "✋"
+  },
+  "secrets": [],
+  "tests": [
+    {
+      "id": "signup.slots",
+      "name": "The sheet shows its slots and who took them",
+      "path": "/",
+      "expectSelector": "#events [data-event] [data-slot] [data-taken]",
+      "visual": true,
+      "impact": [
+        "public/**",
+        "api.js"
+      ]
+    },
+    {
+      "name": "A new sign-up sheet can be made",
+      "path": "/",
+      "expectSelector": "#new-event"
+    }
+  ]
+}
