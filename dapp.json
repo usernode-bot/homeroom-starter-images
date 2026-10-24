@@ -1,0 +1,30 @@
+{
+  "category": "other",
+  "icon": {
+    "emoji": "🗳️"
+  },
+  "secrets": [],
+  "tests": [
+    {
+      "id": "poll.open",
+      "name": "An open poll shows its options and their votes",
+      "path": "/",
+      "expectSelector": "#open-polls [data-poll] [data-option] [data-votes]",
+      "visual": true,
+      "impact": [
+        "public/**",
+        "api.js"
+      ]
+    },
+    {
+      "name": "A new poll can be started",
+      "path": "/",
+      "expectSelector": "#start-poll"
+    },
+    {
+      "name": "Decided polls show what won",
+      "path": "/",
+      "expectSelector": "#decided [data-poll] [data-winner]"
+    }
+  ]
+}
