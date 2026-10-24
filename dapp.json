@@ -1,0 +1,25 @@
+{
+  "category": "other",
+  "icon": {
+    "emoji": "🛒"
+  },
+  "secrets": [],
+  "tests": [
+    {
+      "id": "groceries.list",
+      "name": "The list shows its items, by category",
+      "path": "/",
+      "expectSelector": "#categories [data-category] [data-item] input[type=\"checkbox\"]",
+      "visual": true,
+      "impact": [
+        "public/**",
+        "api.js"
+      ]
+    },
+    {
+      "name": "An item can be added",
+      "path": "/",
+      "expectSelector": "#quick-add input[name=\"text\"]"
+    }
+  ]
+}

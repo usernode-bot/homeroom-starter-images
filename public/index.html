@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <script>
+  // usernode-dev-console@1
+  (function () {
+    if (window.__usernodeDevConsole) return;
+    window.__usernodeDevConsole = true;
+    var S = '__usernodeDevConsole';
+    function serialize(v, depth) {
+      depth = depth || 0;
+      try {
+        if (v === undefined) return 'undefined';
+        if (v === null) return 'null';
+        if (typeof v === 'string') return v;
+        if (typeof v === 'number' || typeof v === 'boolean') return String(v);
+        if (typeof v === 'function') return '[Function ' + (v.name || 'anonymous') + ']';
+        if (v instanceof Error) return (v.stack || (v.name + ': ' + v.message));
+        if (depth > 3) return '[…]';
+        var seen = new WeakSet();
+        return JSON.stringify(v, function (k, val) {
+          if (typeof val === 'object' && val !== null) {
+            if (seen.has(val)) return '[Circular]';
+            seen.add(val);
+          }
+          if (typeof val === 'function') return '[Function ' + (val.name || 'anonymous') + ']';
+          if (val instanceof Error) return val.stack || (val.name + ': ' + val.message);
+          return val;
+        });
+      } catch (e) { try { return String(v); } catch (_) { return '[unserializable]'; } }
+    }
+    function post(level, args, meta) {
+      try {
+        var payload = {
+          sentinel: S,
+          level: level,
+          args: Array.prototype.slice.call(args).map(function (a) { return serialize(a); }),
+          ts: Date.now(),
+          url: location.href,
+        };
+        if (meta) for (var k in meta) payload[k] = meta[k];
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage(payload, '*');
+        }
+      } catch (_) {}
+    }
+    ['log','info','warn','error','debug'].forEach(function (level) {
+      var orig = console[level] ? console[level].bind(console) : function () {};
+      console[level] = function () { post(level, arguments); orig.apply(null, arguments); };
+    });
+    window.addEventListener('error', function (e) {
+      var msg = (e.error && (e.error.stack || e.error.message)) || e.message || 'Error';
+      post('error', [msg], { source: e.filename || '', line: e.lineno || 0, col: e.colno || 0, kind: 'error' });
+    });
+    window.addEventListener('unhandledrejection', function (e) {
+      var r = e.reason;
+      var msg = (r && (r.stack || r.message)) || String(r);
+      post('error', [msg], { kind: 'unhandledrejection' });
+    });
+    try { post('info', ['[dev-console ready]'], { kind: 'ready' }); } catch (_) {}
+  })();
+  </script>
+  <title>{{APP_NAME}}</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%237c3aed'/><circle cx='50' cy='50' r='18' fill='white'/></svg>">
+  <!-- The platform's native UI kit (usernode-native): the blurred nav bar,
+       swipe actions, drag to reorder, pull to refresh, sheets, toasts, press
+       states, and a tap outside a field closing the keyboard. Centrally
+       hosted and loaded by RELATIVE path, like the bridge: never vendor it.
+       Before this app's own stylesheet, so the app's rules win a tie. -->
+  <link rel="stylesheet" href="/usernode-native/v1/native.css">
+  <!-- This app's precompiled Tailwind (npm run build writes it on every
+       image build; tailwind.config.js says which files it scans). -->
+  <link rel="stylesheet" href="/tailwind.css">
+  <!-- The platform bridge, centrally hosted and loaded by RELATIVE path.
+       Never vendor it and never write a hostname in front of it. It is also
+       how the app answers the shell, so keep it even if no bridge API is
+       called; it is also how the shell learns this app opens offline (the
+       service worker in public/sw.js serves it). -->
+  <script src="/usernode-bridge/v1/bridge.js"></script>
+  <!-- Follow the viewer's Homeroom theme (the bridge reports it), with the
+       OS preference as the fallback outside Homeroom. -->
+  <script>
+    (function () {
+      var media = window.matchMedia('(prefers-color-scheme: dark)');
+      function applyTheme() {
+        var theme = (window.usernode && window.usernode.theme) || (media.matches ? 'dark' : 'light');
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        document.documentElement.style.colorScheme = theme;
+      }
+      applyTheme();
+      window.addEventListener('usernode:theme-changed', applyTheme);
+      media.addEventListener('change', applyTheme);
+    })();
+  </script>
+  <!-- The native UI kit's half that acts (see the stylesheet above). -->
+  <script src="/usernode-native/v1/native.js"></script>
+  <!-- What takes the loading shapes' place fades in, briefly, rather than
+       cutting over: an animation replays whenever [hidden] comes off, so
+       nothing has to start it. None under reduced motion. -->
+  <style>
+    @keyframes appear { from { opacity: 0; } to { opacity: 1; } }
+    @media (prefers-reduced-motion: no-preference) { .appear { animation: appear 200ms ease-out; } }
+
+    /* The kit in this app's colours: its accent, cards, sheets, nav bar and
+       hairlines are the design kit's tokens, so both looks follow. */
+    :root, .dark {
+      --un-accent: rgb(var(--accent));
+      --un-accent-contrast: rgb(var(--on-accent));
+      --un-action-danger: rgb(var(--danger));
+      --un-action-neutral: rgb(var(--muted));
+      --un-surface: rgb(var(--surface));
+      --un-hairline: rgb(var(--line));
+      --un-muted: rgb(var(--muted));
+      --un-group-bg: rgb(var(--surface));
+      --un-sheet-bg: rgb(var(--surface));
+      --un-popover-bg: rgb(var(--surface));
+      --un-navbar-bg: rgb(var(--ground) / 0.82);
+    }
+
+    /* A page that feels like a screen, not a web page: dragging it moves
+       this app (and bounces) instead of Homeroom around it, it never drifts
+       sideways, and a field never zooms the page. */
+    html { overscroll-behavior-y: contain; overscroll-behavior-x: none; touch-action: pan-y pinch-zoom; }
+    body { overflow-x: clip; }
+    input, textarea, button { touch-action: manipulation; }
+    @media (hover: none) and (pointer: coarse) {
+      input, textarea, select { font-size: 16px !important; }
+    }
+
+    /* The nav bar's compact title, and the large title below it that folds
+       into it as the list scrolls (unNative.attachNavBar). */
+    #bar .un-navbar-title { flex: none; }
+    #large-title { transform-origin: left center; }
+
+    /* The connection strip: under the nav bar, in the page, only when there
+       is something to say (offline, saving, waiting to sync). */
+    #offline-chip.tappable { cursor: pointer; }
+
+    /* Reminders' round tick, in the app's accent. */
+    .check {
+      appearance: none; -webkit-appearance: none;
+      width: 22px; height: 22px; border-radius: 9999px; flex-shrink: 0;
+      border: 1.5px solid rgb(var(--muted) / 0.55); background: transparent;
+      position: relative; cursor: pointer;
+      transition: background-color 150ms, border-color 150ms, scale 150ms;
+    }
+    .check:active { scale: 0.88; }
+    .check:checked { background: rgb(var(--accent)); border-color: rgb(var(--accent)); }
+    .check:checked::after {
+      content: ''; position: absolute; left: 6.5px; top: 3px; width: 6px; height: 11px;
+      border: solid rgb(var(--on-accent)); border-width: 0 2px 2px 0; transform: rotate(45deg);
+    }
+    /* The tick's tap area is the full 44px, beyond the drawn circle. */
+    .check-hit { display: flex; width: 44px; height: 44px; margin: -11px -6px -11px -12px; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+
+    /* A long press is a drag (or a swipe), never a text selection. */
+    .item-row, .cat-head { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+    /* Touch screens: items lift with a long press, so no item handles, and
+       swiping a row shows Rename and Delete, so no hover buttons. */
+    @media (hover: none) and (pointer: coarse) {
+      .item-drag, .hover-action { display: none !important; }
+    }
+    @media (hover: hover) {
+      .hover-action { opacity: 0; }
+      .item-row:hover .hover-action, .cat-head:hover .hover-action, .hover-action:focus-visible { opacity: 1; }
+    }
+    /* What needs a connection is dimmed while offline. */
+    body.is-offline .needs-net { opacity: 0.4; }
+  </style>
+</head>
+<body class="min-h-screen bg-ground text-fg">
+  <!-- The nav bar: fixed, blurred, the list's name once the large title
+       has scrolled under it, and its actions on the right. -->
+  <header id="bar" class="un-navbar un-safe-top">
+    <div class="relative mx-auto flex h-12 w-full max-w-xl items-center justify-end gap-1 px-1">
+      <span class="un-navbar-title pointer-events-none absolute left-1/2 max-w-[45%] -translate-x-1/2 truncate text-center">{{APP_NAME}}</span>
+      <button id="undo" type="button" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-accent disabled:cursor-default disabled:opacity-30" aria-label="Undo" title="Undo" disabled></button>
+      <button id="redo" type="button" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-accent disabled:cursor-default disabled:opacity-30" aria-label="Redo" title="Redo" disabled></button>
+      <div class="relative">
+        <button id="menu-button" type="button" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-accent" aria-label="List options" aria-haspopup="menu" aria-expanded="false"></button>
+        <!-- Only when the kit has not loaded: the same options, over the
+             page under the button. With the kit they are its menu (a sheet
+             on a phone, a dropdown on a computer). -->
+        <div id="menu" class="list absolute right-0 top-full z-50 mt-1 w-64 shadow-lg" role="menu" hidden></div>
+      </div>
+    </div>
+  </header>
+
+  <main id="page" class="mx-auto flex max-w-xl flex-col gap-4 px-4 pb-24" style="padding-top: calc(3rem + var(--un-safe-inset-top, env(safe-area-inset-top, 0px)))">
+    <p id="offline-chip" class="-mx-4 border-b border-line bg-surface px-4 py-1.5 text-center text-small font-medium text-fg" role="status" aria-live="polite" hidden></p>
+
+    <header class="flex flex-col gap-1 pt-2">
+      <div id="large-title">
+        <h1 class="text-title">{{APP_NAME}}</h1>
+      </div>
+      <!-- The latest thing somebody else did this week. -->
+      <p id="activity" class="min-w-0 truncate text-small text-muted" hidden></p>
+    </header>
+
+    <div class="flex flex-col gap-3">
+      <div class="relative">
+        <input id="search" type="search" autocomplete="off" enterkeyhint="search" class="field rounded-xl border-0 bg-raised pl-10 pr-11" placeholder="Search items…" aria-label="Search items">
+        <span id="search-icon" class="pointer-events-none absolute left-3 top-0 flex h-11 items-center text-muted"></span>
+        <button id="search-clear" type="button" class="absolute right-0 top-0 flex h-11 w-11 items-center justify-center text-muted" aria-label="Clear search" hidden></button>
+      </div>
+      <!-- Quick-add: into the list's General items, at the top. -->
+      <form id="quick-add" class="flex items-center gap-3 rounded-xl border border-line bg-surface px-4" autocomplete="off">
+        <span class="select-none text-heading font-normal leading-none text-accent" aria-hidden="true">+</span>
+        <input name="text" type="text" maxlength="500" enterkeyhint="done" class="min-h-11 min-w-0 flex-1 bg-transparent py-2 text-body text-fg placeholder:text-muted/60 focus:outline-none" placeholder="Add an item…" aria-label="Add an item">
+      </form>
+    </div>
+
+    <!-- Loading: the list's own shape, the General items and then a
+         category under its heading, so nothing moves when it arrives. -->
+    <div id="loading" class="flex flex-col gap-5" aria-label="Loading">
+      <ul class="list" aria-hidden="true">
+        <li class="list-row gap-3"><div class="skeleton h-5 w-5 shrink-0 rounded-full"></div><div class="skeleton h-4 w-2/5"></div></li>
+        <li class="list-row gap-3"><div class="skeleton h-5 w-5 shrink-0 rounded-full"></div><div class="skeleton h-4 w-1/3"></div></li>
+      </ul>
+      <div class="flex flex-col gap-1" aria-hidden="true">
+        <div class="skeleton mx-1 my-3 h-5 w-28"></div>
+        <ul class="list">
+          <li class="list-row gap-3"><div class="skeleton h-5 w-5 shrink-0 rounded-full"></div><div class="skeleton h-4 w-1/2"></div></li>
+          <li class="list-row gap-3"><div class="skeleton h-5 w-5 shrink-0 rounded-full"></div><div class="skeleton h-4 w-1/4"></div></li>
+          <li class="list-row gap-3"><div class="skeleton h-5 w-5 shrink-0 rounded-full"></div><div class="skeleton h-4 w-2/5"></div></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Error: only when the load failed and nothing is saved on this device. -->
+    <div id="error" class="state-error card" hidden>
+      <p class="text-heading">The list did not load</p>
+      <p id="error-text" class="text-body text-muted">Nothing on it is lost. Check your connection and try again.</p>
+      <button id="retry" type="button" class="btn-secondary">Retry</button>
+    </div>
+
+    <!-- Empty: only when the load worked and the list has nothing on it. -->
+    <div id="empty" class="state-empty card" hidden>
+      <p class="text-heading">Nothing on the list yet</p>
+      <p class="text-body text-muted">Add what you need above. Give it categories, such as aisles or shops, below.</p>
+    </div>
+
+    <p id="no-results" class="px-1 py-6 text-center text-body text-muted" hidden></p>
+
+    <!-- The General items first, with no heading, then each category. -->
+    <div id="categories" class="flex flex-col gap-6 appear" hidden></div>
+
+    <form id="new-category" class="needs-net flex items-center gap-3 px-4" autocomplete="off" hidden>
+      <span class="select-none text-heading font-normal leading-none text-accent" aria-hidden="true">+</span>
+      <input name="name" type="text" maxlength="100" enterkeyhint="done" class="min-h-11 min-w-0 flex-1 bg-transparent py-2 text-body text-fg placeholder:text-muted/60 focus:outline-none" placeholder="New category…" aria-label="New category">
+    </form>
+  </main>
+
+  <script src="/live-updates.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
