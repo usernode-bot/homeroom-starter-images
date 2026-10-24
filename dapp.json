@@ -1,0 +1,25 @@
+{
+  "category": "other",
+  "icon": {
+    "emoji": "🧹"
+  },
+  "secrets": [],
+  "tests": [
+    {
+      "id": "chores.week",
+      "name": "This week's chores are listed",
+      "path": "/",
+      "expectSelector": "#chores [data-chore]",
+      "visual": true,
+      "impact": [
+        "public/**",
+        "api.js"
+      ]
+    },
+    {
+      "name": "With the demo rota, each chore says whose turn it is",
+      "path": "/?demo=1",
+      "expectSelector": "#chores [data-chore] [data-turn]"
+    }
+  ]
+}
