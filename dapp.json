@@ -1,0 +1,25 @@
+{
+  "category": "other",
+  "icon": {
+    "emoji": "📚"
+  },
+  "secrets": [],
+  "tests": [
+    {
+      "id": "library.shelf",
+      "name": "The library lists things, borrowed and available",
+      "path": "/",
+      "expectSelector": "#shelf [data-thing][data-status=\"out\"]",
+      "visual": true,
+      "impact": [
+        "public/**",
+        "api.js"
+      ]
+    },
+    {
+      "name": "Something can be added to lend",
+      "path": "/",
+      "expectSelector": "#add-form input[name=\"name\"]"
+    }
+  ]
+}
