@@ -1,0 +1,26 @@
+{
+  "category": "other",
+  "icon": {
+    "emoji": "⏱️"
+  },
+  "secrets": [],
+  "tests": [
+    {
+      "id": "timer.ready",
+      "name": "The timer is ready for a 25 minute session",
+      "path": "/",
+      "expectSelector": "#timer[data-state=\"ready\"] #start",
+      "expectText": "25:00",
+      "visual": true,
+      "impact": [
+        "public/**",
+        "api.js"
+      ]
+    },
+    {
+      "name": "Today’s count of finished sessions loads",
+      "path": "/",
+      "expectSelector": "#today[data-loaded]"
+    }
+  ]
+}
