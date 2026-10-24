@@ -1,0 +1,30 @@
+{
+  "category": "other",
+  "icon": {
+    "emoji": "📅"
+  },
+  "secrets": [],
+  "tests": [
+    {
+      "id": "times.grid",
+      "name": "The grid shows who is free when",
+      "path": "/",
+      "expectSelector": "#plans [data-plan] [data-slot] [data-mark]",
+      "visual": true,
+      "impact": [
+        "public/**",
+        "api.js"
+      ]
+    },
+    {
+      "name": "The best time so far is named",
+      "path": "/",
+      "expectSelector": "#plans [data-plan] [data-best]"
+    },
+    {
+      "name": "A new plan can be started",
+      "path": "/",
+      "expectSelector": "#new-plan"
+    }
+  ]
+}
