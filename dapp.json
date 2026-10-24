@@ -1,0 +1,30 @@
+{
+  "category": "other",
+  "icon": {
+    "emoji": "🙋"
+  },
+  "secrets": [],
+  "tests": [
+    {
+      "id": "signup.rsvp",
+      "name": "The event shows who is coming",
+      "path": "/",
+      "expectSelector": "#events [data-event] [data-headcount]",
+      "visual": true,
+      "impact": [
+        "public/**",
+        "api.js"
+      ]
+    },
+    {
+      "name": "You can say whether you are coming",
+      "path": "/",
+      "expectSelector": "#events [data-event] [data-answer=\"going\"]"
+    },
+    {
+      "name": "A new event can be made",
+      "path": "/",
+      "expectSelector": "#new-event"
+    }
+  ]
+}
