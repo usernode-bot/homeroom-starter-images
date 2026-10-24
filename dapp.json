@@ -1,0 +1,30 @@
+{
+  "category": "other",
+  "icon": {
+    "emoji": "📅"
+  },
+  "secrets": [],
+  "tests": [
+    {
+      "id": "week.grid",
+      "name": "The week shows how many people can make each hour",
+      "path": "/",
+      "expectSelector": "#week-grid [data-cell][data-free]",
+      "visual": true,
+      "impact": [
+        "public/**",
+        "api.js"
+      ]
+    },
+    {
+      "name": "The best weekly time is named",
+      "path": "/",
+      "expectSelector": "#week-best[data-best]"
+    },
+    {
+      "name": "You can mark the hours that work for you",
+      "path": "/",
+      "expectSelector": "#week-toggle [data-view=\"yours\"]"
+    }
+  ]
+}
